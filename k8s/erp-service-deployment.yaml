@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: erp-service
+  namespace: digitrans-cm
+  labels:
+    app: erp-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: erp-service
+  template:
+    metadata:
+      labels:
+        app: erp-service
+        tier: backend
+    spec:
+      containers:
+      - name: erp-service
+        image: ECR_REGISTRY/digitrans-cm/erp-service:IMAGE_TAG
+        ports:
+        - containerPort: 8081
+          name: http
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://RDS_ERP_ENDPOINT/erp_db?useSSL=false&serverTimezone=Africa/Douala"
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: digitrans-cm-secrets
+              key: DB_USER
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: digitrans-cm-secrets
+              key: DB_PASS
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: digitrans-cm-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: digitrans-cm-config
+              key: REDIS_PORT
+        - name: RABBITMQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: digitrans-cm-config
+              key: RABBITMQ_HOST
+        - name: RABBITMQ_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: digitrans-cm-config
+              key: RABBITMQ_PORT
+        - name: RABBITMQ_USER
+          valueFrom:
+            configMapKeyRef:
+              name: digitrans-cm-config
+              key: RABBITMQ_USER
+        - name: RABBITMQ_PASS
+          valueFrom:
+            secretKeyRef:
+              name: digitrans-cm-secrets
+              key: RABBITMQ_PASS
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: digitrans-cm-secrets
+              key: JWT_SECRET
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 90
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: erp-service
+  namespace: digitrans-cm
+  labels:
+    app: erp-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8081
+    targetPort: 8081
+    protocol: TCP
+    name: http
+  selector:
+    app: erp-service
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: erp-service-hpa
+  namespace: digitrans-cm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: erp-service
+  minReplicas: 2
+  maxReplicas: 6
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80

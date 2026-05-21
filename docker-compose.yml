@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_HOST: redis
+      JWT_SECRET: agrocam-digitrans-secret-key-2024-very-long-secret
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  erp-service:
+    build: ./erp-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/erp_db?useSSL=false&serverTimezone=Africa/Douala&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+      JWT_SECRET: agrocam-digitrans-secret-key-2024-very-long-secret
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  crm-service:
+    build: ./crm-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/crm_db?useSSL=false&serverTimezone=Africa/Douala&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      REDIS_HOST: redis
+      JWT_SECRET: agrocam-digitrans-secret-key-2024-very-long-secret
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  supply-chain-service:
+    build: ./supply-chain-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:3306/supply_db?useSSL=false&serverTimezone=Africa/Douala&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+      JWT_SECRET: agrocam-digitrans-secret-key-2024-very-long-secret
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  bi-service:
+    build: ./bi-service
+    ports:
+      - "8084:8084"
+    environment:
+      ERP_DB_URL: jdbc:mysql://host.docker.internal:3306/erp_db?useSSL=false&serverTimezone=Africa/Douala&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      CRM_DB_URL: jdbc:mysql://host.docker.internal:3306/crm_db?useSSL=false&serverTimezone=Africa/Douala&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SUPPLY_DB_URL: jdbc:mysql://host.docker.internal:3306/supply_db?useSSL=false&serverTimezone=Africa/Douala&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      DB_USER: root
+      DB_PASS: ""
+      REDIS_HOST: redis
+      RABBITMQ_HOST: rabbitmq
+      JWT_SECRET: agrocam-digitrans-secret-key-2024-very-long-secret
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

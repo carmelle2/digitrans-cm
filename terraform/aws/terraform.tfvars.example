@@ -1,0 +1,17 @@
+# Terraform Variables for DIGITRANS-CM Project
+# Copy this file to terraform.tfvars and fill in your values
+
+# Environment Configuration
+environment = "prod" # Options: dev, test, prod
+aws_region  = "af-south-1" # Cape Town for data sovereignty
+
+# Network Configuration
+vpc_cidr = "10.0.0.0/16"
+
+# Database Credentials (use AWS Secrets Manager in production)
+db_username = "admin"
+db_password = "CHANGE_ME_SECURE_PASSWORD"
+
+# Cost Optimization Tags
+cost_center = "DIGITRANS-CM"
+project_code = "AGROCAM-2026"
