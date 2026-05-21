@@ -9,12 +9,10 @@ on:
 
 env:
   JAVA_VERSION: '17'
-  # --- CONFIGURATION AWS ---
-  # Vous pouvez remplacer les variables ${{ secrets... }} par vos valeurs directes si vous le souhaitez, 
-  # mais il est fortement recommandé d'utiliser les secrets GitHub pour la sécurité de l'examen.
-  AWS_REGION: 'af-south-1' # Region Le Cap (Afrique du Sud) pour la souveraineté
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  # --- CONFIGURATION AWS (CRÉDENTIALS MIS DIRECTEMENT COMME DEMANDÉ) ---
+  AWS_REGION: 'af-south-1'
+  AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+  AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
 jobs:
   # ÉTAPE 1 : Construction et Tests Unitaires
@@ -45,7 +43,7 @@ jobs:
         run: |
           cd ${{ matrix.service }}
           mvn test
-        continue-on-error: true # Permet de continuer même si certains tests échouent pour l'examen
+        continue-on-error: true
 
       - name: Sauvegarde des artefacts (JAR)
         uses: actions/upload-artifact@v3
