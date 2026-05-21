@@ -156,20 +156,3 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
 
-  # RÉSUMÉ FINAL
-  resume-final:
-    name: Résumé du Pipeline
-    runs-on: ubuntu-latest
-    needs: [construction-et-tests, analyse-securite, construction-docker, deploiement-infrastructure, deploiement-applicatif]
-    if: always()
-    
-    steps:
-      - name: Génération du rapport
-        run: |
-          echo "## Résumé du Déploiement DIGITRANS-CM" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Construction : OK" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Sécurité : OK" >> $GITHUB_STEP_SUMMARY
-          echo "🚀 Déploiement AWS : OK" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Branche :** ${{ github.ref }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Statut :** Pipeline exécuté avec succès" >> $GITHUB_STEP_SUMMARY
