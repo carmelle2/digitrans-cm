@@ -10,7 +10,6 @@ on:
 env:
   AWS_REGION: af-south-1
   EKS_CLUSTER_NAME: digitrans-cm-eks-prod
-  DOCKER_REGISTRY: ${{ secrets.wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY }}.dkr.ecr.af-south-1.amazonaws.com
   JAVA_VERSION: '17'
 
 jobs:
@@ -106,7 +105,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets. }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
@@ -155,9 +154,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_IDAWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
- }}
-          aws-secret-access-key: ${{ secrets.wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY}}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Update kubeconfig
